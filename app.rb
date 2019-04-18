@@ -1,7 +1,6 @@
 require 'bundler'
 require 'json'
 Bundler.require
-require 'pry-byebug'
 
 set :port, 8080 unless Sinatra::Base.production?
 
