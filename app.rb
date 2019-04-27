@@ -34,8 +34,3 @@ def parse_tweet_tokens(tweet)
     REDIS.lpush(token, tweet_id)
   end
 end
-
-def get_tweets_for_token(token)
-  list_length = REDIS.llen token
-  REDIS.lrange(token, 0, list_length)
-end

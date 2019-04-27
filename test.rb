@@ -30,7 +30,7 @@ describe 'NanoTwitter' do
   it 'can tokenize a single tweet' do
     parse_tweet_tokens(JSON.parse(@tweet))
     @tweet_body.split.each do |token|
-      get_tweets_for_token(token).must_equal ['0']
+      REDIS.lrange(token, 0, -1).must_equal ['0']
     end
   end
 
@@ -50,14 +50,14 @@ describe 'NanoTwitter' do
       love: ['1']
     }
     actual_hash = Hash.new
-    REDIS.keys.each { |token| actual_hash[token.to_sym] = get_tweets_for_token(token) }
+    REDIS.keys.each { |token| actual_hash[token.to_sym] = REDIS.lrange(token, 0, -1) }
     target_hash.must_equal actual_hash
   end
 
   it 'can parse a tweet from the queue' do
     publish_tweet(@tweet)
     @tweet_body.split.each do |token|
-      get_tweets_for_token(token).must_equal ['0']
+      REDIS.lrange(token, 0, -1).must_equal ['0']
     end
   end
 
@@ -77,7 +77,7 @@ describe 'NanoTwitter' do
       love: ['1']
     }
     actual_hash = Hash.new
-    REDIS.keys.each { |token| actual_hash[token.to_sym] = get_tweets_for_token(token) }
+    REDIS.keys.each { |token| actual_hash[token.to_sym] = REDIS.lrange(token, 0, -1) }
     target_hash.must_equal actual_hash
   end
 
@@ -97,7 +97,7 @@ describe 'NanoTwitter' do
       love: ['1']
     }
     actual_hash = Hash.new
-    REDIS.keys.each { |token| actual_hash[token.to_sym] = get_tweets_for_token(token) }
+    REDIS.keys.each { |token| actual_hash[token.to_sym] = REDIS.lrange(token, 0, -1) }
     target_hash.must_equal actual_hash
   end
 
