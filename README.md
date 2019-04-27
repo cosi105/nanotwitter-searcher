@@ -8,7 +8,7 @@ Production deployment: https://nano-twitter-searcher.herokuapp.com/
 [![Maintainability](https://api.codeclimate.com/v1/badges/4cc4fb45232fbd957657/maintainability)](https://codeclimate.com/github/cosi105/searcher/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/4cc4fb45232fbd957657/test_coverage)](https://codeclimate.com/github/cosi105/searcher/test_coverage)
 
-## Queues
+## Subscribed Queues
 
 ### new\_tweet.tweet\_data
 
