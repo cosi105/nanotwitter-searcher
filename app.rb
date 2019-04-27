@@ -7,13 +7,11 @@ set :port, 8080 unless Sinatra::Base.production?
 # Initialize RabbitMQ object & connection appropriate to
 # the current env (viz., local vs. prod)
 if Sinatra::Base.production?
-  # :nocov:
   configure do
     redis_uri = URI.parse(ENV['REDISCLOUD_URL'])
     REDIS = Redis.new(host: redis_uri.host, port: redis_uri.port, password: redis_uri.password)
   end
   rabbit = Bunny.new(ENV['CLOUDAMQP_URL'])
-  # :nocov:
 else
   REDIS = Redis.new
   rabbit = Bunny.new(automatically_recover: false)
@@ -34,7 +32,6 @@ def parse_tweet_tokens(tweet)
   tokens = tweet['tweet_body'].split.map(&:downcase)
   tokens.each do |token|
     REDIS.lpush(token, tweet_id)
-    puts token
   end
 end
 
