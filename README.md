@@ -20,3 +20,7 @@ Production deployment: https://nano-twitter-searcher.herokuapp.com/
 ### word: [tweet_ids]
 
 ## Routes
+
+## Seeding
+
+The service is subscribed to a `searcher.seed` queue, which the main NanoTwitter app uses to publish all of the tweets in the database. Searcher then goes through every tweet and generates its cached mapping of tokens to tweet IDs.
