@@ -41,9 +41,14 @@ def parse_tweet_tokens(tweet)
   end
 end
 
+# Parses a Tweet body into tokens.
+def parse_tweet_tokens(tweet_body)
+  puts tweet_body.split
+end
+
 # Parses & indexes tokens from each Tweet body in payload.
 def seed_from_payload(payload)
-  payload.each do |tweet|
-    parse_tweet_tokens(tweet)
+  payload.each do |tweet_body|
+    parse_tweet_tokens(tweet_body)
   end
 end
