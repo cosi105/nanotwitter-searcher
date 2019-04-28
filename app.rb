@@ -25,6 +25,7 @@ seed = channel.queue('searcher.seed')
 
 # Parses & indexes tokens from payload.
 seed.subscribe(block: false) do |delivery_info, properties, body|
+  REDIS.flushall
   seed_from_payload(JSON.parse(body))
 end
 
@@ -41,14 +42,9 @@ def parse_tweet_tokens(tweet)
   end
 end
 
-# Parses a Tweet body into tokens.
-def parse_tweet_tokens(tweet_body)
-  puts tweet_body.split
-end
-
 # Parses & indexes tokens from each Tweet body in payload.
 def seed_from_payload(payload)
-  payload.each do |tweet_body|
-    parse_tweet_tokens(tweet_body)
+  payload.each do |tweet|
+    parse_tweet_tokens(tweet)
   end
 end
