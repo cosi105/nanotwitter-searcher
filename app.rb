@@ -43,7 +43,7 @@ end
 
 # Parses & indexes tokens from each Tweet body in payload.
 def seed_from_payload(payload)
-  payload['tweets'].each do |tweet|
+  payload.each do |tweet|
     parse_tweet_tokens(tweet)
   end
 end

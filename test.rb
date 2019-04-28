@@ -122,10 +122,10 @@ describe 'NanoTwitter Searcher' do
   end
 
   it 'can seed multiple tweets' do
-    payload = { tweets: [
+    payload = [
       { tweet_id: 0, tweet_body: @tweet_body },
       { tweet_id: 1, tweet_body: 'i love scalability' }
-    ] }.to_json
+    ].to_json
     seed_from_payload(JSON.parse(payload))
     target_hash = {
       scalability: %w[1 0],
@@ -141,10 +141,10 @@ describe 'NanoTwitter Searcher' do
   end
 
   it 'can seed multiple tweets from queue' do
-    payload = { tweets: [
+    payload = [
       { tweet_id: 0, tweet_body: @tweet_body },
       { tweet_id: 1, tweet_body: 'i love scalability' }
-    ] }.to_json
+    ].to_json
     RABBIT_EXCHANGE.publish(payload, routing_key: 'searcher.seed')
     sleep 3
     target_hash = {
