@@ -12,8 +12,8 @@ Production deployment: https://nano-twitter-searcher.herokuapp.com/
 
 | Relation | Queue Name | Payload | Interaction |
 | :------- | :--------- | :------ |:--
-| Subscribes to | `searcher.seed`        | `[{tweet_id, tweet_body}, ...]`     | For each Tweet in payload, parses `tweet_body` into tokens, then caches mappings of tokens `to tweet_id`'s containing them.
-| Subscribes to | `new_tweet.tweet_data` | `{author_id, tweet_id, tweet_body}` | Parses `tweet_body` into tokens, then caches mappings of tokens `to tweet_id`'s containing them.
+| Subscribes to | `searcher.seed`        | `[{tweet_id, tweet_body}, ...]`     | For each Tweet in payload, parses `tweet_body` into tokens, then caches mappings of tokens to `tweet_id`'s containing them.
+| Subscribes to | `new_tweet.tweet_data` | `{author_id, tweet_id, tweet_body}` | Parses `tweet_body` into tokens, then caches mappings of tokens to `tweet_id`'s containing them.
 
 ## Caches
 
