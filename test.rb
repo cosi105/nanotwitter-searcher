@@ -18,7 +18,7 @@ def publish_tweet(tweet)
   sleep 3
 end
 
-describe 'NanoTwitter' do
+describe 'NanoTwitter Searcher' do
   include Rack::Test::Methods
   before do
     REDIS.flushall
@@ -49,9 +49,9 @@ describe 'NanoTwitter' do
       i: ['1'],
       love: ['1']
     }
-    actual_hash = Hash.new
+    actual_hash = {}
     REDIS.keys.each { |token| actual_hash[token.to_sym] = REDIS.lrange(token, 0, -1) }
-    target_hash.must_equal actual_hash
+    actual_hash.must_equal target_hash
   end
 
   it 'can parse a tweet from the queue' do
@@ -76,12 +76,12 @@ describe 'NanoTwitter' do
       i: ['1'],
       love: ['1']
     }
-    actual_hash = Hash.new
+    actual_hash = {}
     REDIS.keys.each { |token| actual_hash[token.to_sym] = REDIS.lrange(token, 0, -1) }
-    target_hash.must_equal actual_hash
+    actual_hash.must_equal target_hash
   end
 
-  it 'can parse multiple tweets from the queue' do
+  it 'is case-insensitive' do
     publish_tweet(@tweet)
     tweet2 = {
       tweet_id: 1,
@@ -96,9 +96,67 @@ describe 'NanoTwitter' do
       i: ['1'],
       love: ['1']
     }
-    actual_hash = Hash.new
+    actual_hash = {}
     REDIS.keys.each { |token| actual_hash[token.to_sym] = REDIS.lrange(token, 0, -1) }
-    target_hash.must_equal actual_hash
+    actual_hash.must_equal target_hash
   end
 
+  it 'ignores punctuation' do
+    publish_tweet(@tweet)
+    tweet2 = {
+      tweet_id: 1,
+      tweet_body: 'i love scalability!'
+    }.to_json
+    publish_tweet(tweet2)
+    target_hash = {
+      scalability: %w[1 0],
+      is: ['0'],
+      the: ['0'],
+      best: ['0'],
+      i: ['1'],
+      love: ['1']
+    }
+    actual_hash = {}
+    REDIS.keys.each { |token| actual_hash[token.to_sym] = REDIS.lrange(token, 0, -1) }
+    actual_hash.must_equal target_hash
+  end
+
+  it 'can seed multiple tweets' do
+    payload = [
+      { tweet_id: 0, tweet_body: @tweet_body },
+      { tweet_id: 1, tweet_body: 'i love scalability' }
+    ].to_json
+    seed_from_payload(JSON.parse(payload))
+    target_hash = {
+      scalability: %w[1 0],
+      is: ['0'],
+      the: ['0'],
+      best: ['0'],
+      i: ['1'],
+      love: ['1']
+    }
+    actual_hash = {}
+    REDIS.keys.each { |token| actual_hash[token.to_sym] = REDIS.lrange(token, 0, -1) }
+    actual_hash.must_equal target_hash
+  end
+
+  it 'can seed multiple tweets from queue' do
+    payload = [
+      { tweet_id: 0, tweet_body: @tweet_body },
+      { tweet_id: 1, tweet_body: 'i love scalability' }
+    ].to_json
+    RABBIT_EXCHANGE.publish(payload, routing_key: 'searcher.seed')
+    sleep 3
+    target_hash = {
+      scalability: %w[1 0],
+      is: ['0'],
+      the: ['0'],
+      best: ['0'],
+      i: ['1'],
+      love: ['1']
+    }
+    actual_hash = {}
+    REDIS.keys.each { |token| actual_hash[token.to_sym] = REDIS.lrange(token, 0, -1) }
+    actual_hash.must_equal target_hash
+  end
 end
