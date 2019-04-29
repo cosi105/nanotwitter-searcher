@@ -1,5 +1,6 @@
 require 'bundler'
 require 'json'
+require 'set'
 Bundler.require
 
 set :port, 8083 unless Sinatra::Base.production?
@@ -17,7 +18,7 @@ RABBIT_EXCHANGE = channel.default_exchange
 # author_id, tweet_id, tweet_body
 NEW_TWEET = channel.queue('new_tweet.tweet_data')
 SEARCH_HTML = channel.queue('searcher.html')
-seed = channel.queue('timeline.data.seed')
+seed = channel.queue('searcher.data.seed')
 
 # Parses & indexes tokens from payload.
 seed.subscribe(block: false) do |delivery_info, properties, body|
@@ -37,12 +38,9 @@ def parse_tweet_tokens(tweet)
 end
 
 # Parses & indexes tokens from each Tweet body in payload.
-def seed_from_payload(payload)
-  tweet_ids = Set.new
-  payload.each do |timeline|
-    tweets = timeline['sorted_tweets']
-    tweets.each do |tweet|
-      parse_tweet_tokens(tweet) unless tweet_ids.add?(tweet['tweet_id']).nil?
-    end
+def seed_from_payload(body)
+  body.each do |tweet|
+    parse_tweet_tokens(tweet)
+    puts "Parsed tweet #{tweet['tweet_id']}"
   end
 end
