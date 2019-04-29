@@ -17,7 +17,7 @@ RABBIT_EXCHANGE = channel.default_exchange
 # author_id, tweet_id, tweet_body
 NEW_TWEET = channel.queue('new_tweet.tweet_data')
 SEARCH_HTML = channel.queue('searcher.html')
-seed = channel.queue('searcher.seed')
+seed = channel.queue('timeline.data.seed')
 
 # Parses & indexes tokens from payload.
 seed.subscribe(block: false) do |delivery_info, properties, body|
@@ -38,5 +38,11 @@ end
 
 # Parses & indexes tokens from each Tweet body in payload.
 def seed_from_payload(payload)
-  payload.each { |tweet| parse_tweet_tokens(tweet) }
+  tweet_ids = Set.new
+  payload.each do |timeline|
+    tweets = timeline['sorted_tweets']
+    tweets.each do |tweet|
+      parse_tweet_tokens(tweet) unless tweet_ids.add?(tweet['tweet_id']).nil?
+    end
+  end
 end
