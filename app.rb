@@ -1,3 +1,5 @@
+# Searcher Micro-Service (port 8083)
+
 require 'bundler'
 require 'json'
 require 'set'
