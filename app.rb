@@ -18,7 +18,7 @@ rabbit.start
 channel = rabbit.create_channel
 RABBIT_EXCHANGE = channel.default_exchange
 # author_id, tweet_id, tweet_body
-NEW_TWEET = channel.queue('new_tweet.tweet_data')
+NEW_TWEET = channel.queue('new_tweet.searcher.tweet_data')
 SEARCH_HTML = channel.queue('searcher.html')
 seed = channel.queue('searcher.data.seed')
 
