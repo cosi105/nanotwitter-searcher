@@ -24,8 +24,6 @@ RABBIT_EXCHANGE = channel.default_exchange
 # author_id, tweet_id, tweet_body
 NEW_TWEET = channel.queue('new_tweet.searcher.tweet_data')
 SEARCH_HTML = channel.queue('searcher.html')
-
-SEARCH_HTML = channel.queue('searcher.html')
 seed = channel.queue('searcher.data.seed')
 
 # Parses & indexes tokens from payload.
@@ -51,6 +49,5 @@ end
 def seed_from_payload(body)
   body.each do |tweet|
     parse_tweet_tokens(tweet)
-    puts "Parsed tweet #{tweet['tweet_id']}"
   end
 end
