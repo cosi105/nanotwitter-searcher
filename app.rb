@@ -2,7 +2,6 @@
 
 require 'bundler'
 require 'json'
-require 'set'
 Bundler.require
 
 set :port, 8083 unless Sinatra::Base.production?
@@ -33,7 +32,7 @@ end
 
 def parse_tweet_tokens(tweet)
   tweet_id = tweet['tweet_id']
-  tokens = tweet['tweet_body'].split.map { |token| token.downcase.gsub(/[^a-z ]/, '') }.to_set
+  tokens = tweet['tweet_body'].split.map { |token| token.downcase.gsub(/[^a-z ]/, '') }.uniq
   payload = { tweet_id: tweet_id, tokens: tokens }.to_json
   RABBIT_EXCHANGE.publish(payload, routing_key: SEARCH_HTML.name)
   tokens.each { |token| REDIS.lpush(token, tweet_id) }
