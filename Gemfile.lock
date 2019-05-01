@@ -24,7 +24,6 @@ GEM
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
     rake (12.3.2)
-    rb-readline (0.5.5)
     redis (4.1.0)
     simplecov (0.16.1)
       docile (~> 1.1)
@@ -49,7 +48,6 @@ DEPENDENCIES
   rack
   rack-test
   rake
-  rb-readline
   redis
   simplecov
   sinatra

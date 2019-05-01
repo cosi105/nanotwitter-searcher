@@ -21,6 +21,8 @@ end
 describe 'NanoTwitter Searcher' do
   include Rack::Test::Methods
   before do
+    REDIS.flushall
+    SEARCH_HTML.purge
     @tweet_id = 0
     @tweet_body = 'scalability is the best'
     @tweet = { tweet_id: @tweet_id, tweet_body: @tweet_body }.to_json
@@ -32,6 +34,7 @@ describe 'NanoTwitter Searcher' do
     msg_json['tweet_id'].must_equal 0
     @tweet_body.split.each do |token|
       msg_json['tokens'].include?(token).must_equal true
+      REDIS.lrange(token, 0, -1).must_equal ['0']
     end
   end
 
@@ -41,6 +44,7 @@ describe 'NanoTwitter Searcher' do
     msg_json['tweet_id'].must_equal 0
     @tweet_body.split.each do |token|
       msg_json['tokens'].include?(token).must_equal true
+      REDIS.lrange(token, 0, -1).must_equal ['0']
     end
   end
 
@@ -54,6 +58,7 @@ describe 'NanoTwitter Searcher' do
     msg_json['tweet_id'].must_equal 1
     %w[i love scalability].each do |token|
       msg_json['tokens'].include?(token).must_equal true
+      REDIS.lrange(token, 0, -1).must_equal ['1']
     end
   end
 
@@ -67,39 +72,19 @@ describe 'NanoTwitter Searcher' do
     msg_json['tweet_id'].must_equal 1
     %w[i love scalability].each do |token|
       msg_json['tokens'].include?(token).must_equal true
+      REDIS.lrange(token, 0, -1).must_equal ['1']
     end
   end
 
-  it 'can seed multiple tweets' do
-    payload = [{ tweet_id: 0, tweet_body: @tweet_body },
-               { tweet_id: 1, tweet_body: 'i love scalability' }].to_json
-    seed_from_payload(JSON.parse(payload))
-    msg_json1 = JSON.parse SEARCH_HTML.pop.last
-    msg_json1['tweet_id'].must_equal 0
-    @tweet_body.split.each do |token|
-      msg_json1['tokens'].include?(token).must_equal true
-    end
-    msg_json2 = JSON.parse SEARCH_HTML.pop.last
-    msg_json2['tweet_id'].must_equal 1
-    %w[i love scalability].each do |token|
-      msg_json2['tokens'].include?(token).must_equal true
-    end
-  end
-
-  it 'can seed multiple tweets from queue' do
-    payload = [{ tweet_id: 0, tweet_body: @tweet_body },
-               { tweet_id: 1, tweet_body: 'i love scalability' }].to_json
-    RABBIT_EXCHANGE.publish(payload, routing_key: 'searcher.data.seed')
-    sleep 3
-    msg_json1 = JSON.parse SEARCH_HTML.pop.last
-    msg_json1['tweet_id'].must_equal 0
-    @tweet_body.split.each do |token|
-      msg_json1['tokens'].include?(token).must_equal true
-    end
-    msg_json2 = JSON.parse SEARCH_HTML.pop.last
-    msg_json2['tweet_id'].must_equal 1
-    %w[i love scalability].each do |token|
-      msg_json2['tokens'].include?(token).must_equal true
-    end
+  it 'can tokenize multiple tweets' do
+    parse_tweet_tokens(JSON.parse(@tweet))
+    tweet2 = {
+      tweet_id: 1,
+      tweet_body: 'i love SCALABILITY'
+    }.to_json
+    parse_tweet_tokens(JSON.parse(tweet2))
+    %w[is the best].each { |token| REDIS.lrange(token, 0, -1).must_equal ['0'] }
+    %w[i love].each { |token| REDIS.lrange(token, 0, -1).must_equal ['1'] }
+    REDIS.lrange('scalability', 0, -1).sort.must_equal %w[0 1]
   end
 end
