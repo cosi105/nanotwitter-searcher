@@ -25,6 +25,14 @@ RABBIT_EXCHANGE = channel.default_exchange
 NEW_TWEET = channel.queue('new_tweet.searcher.tweet_data')
 SEARCH_HTML = channel.queue('searcher.html')
 
+SEARCH_HTML = channel.queue('searcher.html')
+seed = channel.queue('searcher.data.seed')
+
+# Parses & indexes tokens from payload.
+seed.subscribe(block: false) do |delivery_info, properties, body|
+  seed_from_payload(JSON.parse(body))
+end
+
 # Extracts Tweet body from payload & indexes its tokens.
 NEW_TWEET.subscribe(block: false) do |delivery_info, properties, body|
   parse_tweet_tokens(JSON.parse(body))
@@ -37,4 +45,12 @@ def parse_tweet_tokens(tweet)
   RABBIT_EXCHANGE.publish(payload, routing_key: SEARCH_HTML.name)
   tokens.each { |token| REDIS.lpush(token, tweet_id) }
   puts "Parsed tweet #{tweet['tweet_id']}"
+end
+
+# Parses & indexes tokens from each Tweet body in payload.
+def seed_from_payload(body)
+  body.each do |tweet|
+    parse_tweet_tokens(tweet)
+    puts "Parsed tweet #{tweet['tweet_id']}"
+  end
 end
