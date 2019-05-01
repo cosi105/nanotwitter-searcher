@@ -25,11 +25,14 @@ RABBIT_EXCHANGE = channel.default_exchange
 NEW_TWEET = channel.queue('new_tweet.searcher.tweet_data')
 SEARCH_HTML = channel.queue('searcher.html')
 seed = channel.queue('searcher.data.seed')
+cache_purge = channel.queue('cache.purge.searcher')
 
 # Parses & indexes tokens from payload.
 seed.subscribe(block: false) do |delivery_info, properties, body|
   seed_from_payload(JSON.parse(body))
 end
+
+cache_purge.subscribe(block: false) { REDIS.flushall }
 
 # Extracts Tweet body from payload & indexes its tokens.
 NEW_TWEET.subscribe(block: false) do |delivery_info, properties, body|
