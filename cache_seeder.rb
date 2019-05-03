@@ -2,7 +2,7 @@ require 'csv'
 require 'open-uri'
 post '/seed' do
   puts 'Caching search data...'
-  [REDIS_EVEN, REDIS_ODD].each(&:flushall) if params[:csv_url][-5] == '1'
+  [REDIS_EVEN, REDIS_ODD].each(&:flushall)
   whole_csv = CSV.parse(open(params[:csv_url]))
   whole_csv.each do |line|
     key = line[0]
