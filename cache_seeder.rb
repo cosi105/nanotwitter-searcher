@@ -1,13 +1,15 @@
 require 'csv'
 require 'open-uri'
 post '/seed' do
-  puts "Caching search data..."
+  puts 'Caching search data...'
   [REDIS_EVEN, REDIS_ODD].each(&:flushall)
   whole_csv = CSV.parse(open(params[:csv_url]))
-  whole_csv.each do |line|
-    key = line[0]
-    values = line.drop(1)
-    get_shard(key).rpush(key, values)
+  Thread.new do
+    whole_csv.each do |line|
+      key = line[0]
+      values = line.drop(1)
+      get_shard(key).rpush(key, values)
+    end
   end
-  puts "Cached search data!"
+  puts 'Cached search data!'
 end
