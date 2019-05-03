@@ -39,7 +39,7 @@ NEW_TWEET.subscribe(block: false) do |delivery_info, properties, body|
 end
 
 def get_shard(token)
-  SHARDS[token.hash % SHARDS.count]
+  SHARDS[token[0].ord % SHARDS.count]
 end
 
 def parse_tweet_tokens(tweet)
