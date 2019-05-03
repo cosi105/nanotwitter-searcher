@@ -76,45 +76,6 @@ describe 'NanoTwitter Searcher' do
     end
   end
 
-  it 'can seed multiple tweets' do
-    payload = [{ tweet_id: 0, tweet_body: @tweet_body },
-               { tweet_id: 1, tweet_body: 'i love scalability' }].to_json
-    seed_from_payload(JSON.parse(payload))
-    msg_json1 = JSON.parse SEARCH_HTML.pop.last
-    msg_json1['tweet_id'].must_equal 0
-    @tweet_body.split.each do |token|
-      msg_json1['tokens'].include?(token).must_equal true
-    end
-    msg_json2 = JSON.parse SEARCH_HTML.pop.last
-    msg_json2['tweet_id'].must_equal 1
-    %w[i love scalability].each do |token|
-      msg_json2['tokens'].include?(token).must_equal true
-    end
-    %w[is the best].each { |token| REDIS.lrange(token, 0, -1).must_equal ['0'] }
-    %w[i love].each { |token| REDIS.lrange(token, 0, -1).must_equal ['1'] }
-    REDIS.lrange('scalability', 0, -1).sort.must_equal %w[0 1]
-  end
-
-  it 'can seed multiple tweets from queue' do
-    payload = [{ tweet_id: 0, tweet_body: @tweet_body },
-               { tweet_id: 1, tweet_body: 'i love scalability' }].to_json
-    RABBIT_EXCHANGE.publish(payload, routing_key: 'searcher.data.seed')
-    sleep 3
-    msg_json1 = JSON.parse SEARCH_HTML.pop.last
-    msg_json1['tweet_id'].must_equal 0
-    @tweet_body.split.each do |token|
-      msg_json1['tokens'].include?(token).must_equal true
-    end
-    msg_json2 = JSON.parse SEARCH_HTML.pop.last
-    msg_json2['tweet_id'].must_equal 1
-    %w[i love scalability].each do |token|
-      msg_json2['tokens'].include?(token).must_equal true
-    end
-    %w[is the best].each { |token| REDIS.lrange(token, 0, -1).must_equal ['0'] }
-    %w[i love].each { |token| REDIS.lrange(token, 0, -1).must_equal ['1'] }
-    REDIS.lrange('scalability', 0, -1).sort.must_equal %w[0 1]
-  end
-
   it 'can get a second page of search results' do
     4.times { |i| parse_tweet_tokens(JSON.parse({tweet_id: i, tweet_body: 'scalability'}.to_json)) }
     resp = (get '/search?token=scalability&page_num=2&page_size=2').body
