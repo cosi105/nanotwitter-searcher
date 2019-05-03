@@ -21,8 +21,7 @@ end
 describe 'NanoTwitter Searcher' do
   include Rack::Test::Methods
   before do
-    REDIS_EVEN.flushall
-    REDIS_ODD.flushall
+    SHARDS.each(&:flushall)
     SEARCH_HTML.purge
     @tweet_id = 0
     @tweet_body = 'scalability is the best'

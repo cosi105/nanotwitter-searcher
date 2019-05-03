@@ -16,13 +16,11 @@ end
 # the current env (viz., local vs. prod)
 if Sinatra::Base.production?
   configure do
-    REDIS_EVEN = redis_from_uri('REDIS_EVEN_URL')
-    REDIS_ODD = redis_from_uri('REDIS_ODD_URL')
+    SHARDS = (1..8).to_a.map { |i| redis_from_uri("REDIS_#{i}_URL") }
   end
   rabbit = Bunny.new(ENV['CLOUDAMQP_URL'])
 else
-  REDIS_EVEN = Redis.new(port: 6387)
-  REDIS_ODD = Redis.new(port: 6391)
+  SHARDS = [6387, 6391, 6392, 6393, 6394, 6395, 6396, 6397].map { |i| Redis.new(port: i)}
   rabbit = Bunny.new(automatically_recover: false)
 end
 rabbit.start
@@ -41,7 +39,7 @@ NEW_TWEET.subscribe(block: false) do |delivery_info, properties, body|
 end
 
 def get_shard(token)
-  token.hash.even? ? REDIS_EVEN : REDIS_ODD
+  SHARDS[token.hash % SHARDS.count]
 end
 
 def parse_tweet_tokens(tweet)
