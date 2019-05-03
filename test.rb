@@ -114,4 +114,10 @@ describe 'NanoTwitter Searcher' do
     %w[i love].each { |token| REDIS.lrange(token, 0, -1).must_equal ['1'] }
     REDIS.lrange('scalability', 0, -1).sort.must_equal %w[0 1]
   end
+
+  it 'can get a second page of search results' do
+    4.times { |i| parse_tweet_tokens(JSON.parse({tweet_id: i, tweet_body: 'scalability'}.to_json)) }
+    resp = (get '/search?token=scalability&page_num=2&page_size=2').body
+    JSON.parse(resp).count.must_equal 2
+  end
 end

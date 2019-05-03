@@ -44,7 +44,7 @@ def parse_tweet_tokens(tweet)
   tokens = tweet['tweet_body'].split.map { |token| token.downcase.gsub(/[^a-z ]/, '') }.uniq
   payload = { tweet_id: tweet_id, tokens: tokens }.to_json
   RABBIT_EXCHANGE.publish(payload, routing_key: SEARCH_HTML.name)
-  tokens.each { |token| REDIS.lpush(token, tweet_id) }
+  tokens.each { |token| REDIS.rpush(token, tweet_id) }
   puts "Parsed tweet #{tweet['tweet_id']}"
 end
 
@@ -53,4 +53,14 @@ def seed_from_payload(body)
   body.each do |tweet|
     parse_tweet_tokens(tweet)
   end
+end
+
+get '/search' do
+  token = params[:token]
+  page_num = params[:page_num].to_i
+  page_size = params[:page_size].to_i
+
+  start = page_size * (page_num - 1)
+  finish = page_size * page_num
+  REDIS.lrange(token, start, finish - 1).to_json
 end
