@@ -21,7 +21,8 @@ end
 describe 'NanoTwitter Searcher' do
   include Rack::Test::Methods
   before do
-    REDIS.flushall
+    REDIS_EVEN.flushall
+    REDIS_ODD.flushall
     SEARCH_HTML.purge
     @tweet_id = 0
     @tweet_body = 'scalability is the best'
@@ -34,7 +35,7 @@ describe 'NanoTwitter Searcher' do
     msg_json['tweet_id'].must_equal 0
     @tweet_body.split.each do |token|
       msg_json['tokens'].include?(token).must_equal true
-      REDIS.lrange(token, 0, -1).must_equal ['0']
+      get_shard(token).lrange(token, 0, -1).must_equal ['0']
     end
   end
 
@@ -44,7 +45,7 @@ describe 'NanoTwitter Searcher' do
     msg_json['tweet_id'].must_equal 0
     @tweet_body.split.each do |token|
       msg_json['tokens'].include?(token).must_equal true
-      REDIS.lrange(token, 0, -1).must_equal ['0']
+      get_shard(token).lrange(token, 0, -1).must_equal ['0']
     end
   end
 
@@ -58,7 +59,7 @@ describe 'NanoTwitter Searcher' do
     msg_json['tweet_id'].must_equal 1
     %w[i love scalability].each do |token|
       msg_json['tokens'].include?(token).must_equal true
-      REDIS.lrange(token, 0, -1).must_equal ['1']
+      get_shard(token).lrange(token, 0, -1).must_equal ['1']
     end
   end
 
@@ -72,7 +73,7 @@ describe 'NanoTwitter Searcher' do
     msg_json['tweet_id'].must_equal 1
     %w[i love scalability].each do |token|
       msg_json['tokens'].include?(token).must_equal true
-      REDIS.lrange(token, 0, -1).must_equal ['1']
+      get_shard(token).lrange(token, 0, -1).must_equal ['1']
     end
   end
 
