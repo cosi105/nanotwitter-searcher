@@ -33,7 +33,7 @@ NEW_TWEET = channel.queue('new_tweet.searcher.tweet_data')
 SEARCH_HTML = channel.queue('searcher.html')
 
 cache_purge = channel.queue('cache.purge.searcher')
-cache_purge.subscribe(block: false) { REDIS.flushall }
+cache_purge.subscribe(block: false) { [REDIS_EVEN, REDIS_ODD].each(&:flushall) }
 
 # Extracts Tweet body from payload & indexes its tokens.
 NEW_TWEET.subscribe(block: false) do |delivery_info, properties, body|
