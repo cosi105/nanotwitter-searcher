@@ -81,4 +81,13 @@ describe 'NanoTwitter Searcher' do
     resp = (get '/search?token=scalability&page_num=2&page_size=2').body
     JSON.parse(resp).count.must_equal 2
   end
+
+  it 'can seed data from CSV' do
+    data = [['token', 2, 3], ['othertoken', 1]]
+    CSV.open('temp.csv', 'wb') { |csv| data.each { |row| csv << row}}
+    post '/seed', csv_url: './temp.csv'
+    File.delete('temp.csv')
+    get_shard('token').lrange('token', 0, -1).must_equal %w[2 3]
+    get_shard('othertoken').lrange('othertoken', 0, -1).must_equal ['1']
+  end
 end
